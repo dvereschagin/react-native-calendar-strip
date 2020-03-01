@@ -5,7 +5,7 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
 import {polyfill} from "react-lifecycles-compat";
-import { View, Animated, Easing } from "react-native";
+import { View, Animated, Easing, FlatList, Dimensions, Alert } from "react-native";
 
 import moment from "moment";
 
@@ -13,6 +13,9 @@ import CalendarHeader from "./CalendarHeader";
 import CalendarDay from "./CalendarDay";
 import WeekSelector from "./WeekSelector";
 import styles from "./Calendar.style.js";
+
+const width = Dimensions.get('window').width + 10;
+const ITEM_LENGTH = width / 7;
 
 /*
  * Class CalendarStrip that is representing the whole calendar strip and contains CalendarDay elements
@@ -120,6 +123,8 @@ class CalendarStrip extends Component {
     const startingDate = this.getInitialStartingDate();
     const selectedDate = this.setLocale(moment(this.props.selectedDate));
     const weekData = this.updateWeekData(startingDate, selectedDate);
+
+    console.debug('WeekData', weekData);
 
     this.state = {
       startingDate,
@@ -320,6 +325,17 @@ class CalendarStrip extends Component {
     return this.setLocale(startingDate);
   }
 
+  getDates(startDate, stopDate) {
+    var dateArray = [];
+    var currentDate = moment(startDate);
+    var stopDate = moment(stopDate);
+    while (currentDate <= stopDate) {
+        dateArray.push( moment(currentDate).format('YYYY-MM-DD') )
+        currentDate = moment(currentDate).add(1, 'days');
+    }
+    return dateArray;
+}
+
   // Get & update week states for the week based on the startingDate
   updateWeekData(
     startingDate,
@@ -332,7 +348,8 @@ class CalendarStrip extends Component {
     let datesSelectedForWeek = [];
     let datesCustomStylesForWeek = [];
 
-    for (let i = 0; i < this.numDaysInWeek; i++) {
+
+    for (let i = 0; i < 45; i++) {
       let date;
       if (props.useIsoWeekday) {
         // isoWeekday starts from Monday
@@ -344,7 +361,8 @@ class CalendarStrip extends Component {
       datesAllowedForWeek.push(this.isDateAllowed(date, props));
       datesSelectedForWeek.push(this.isDateSelected(date, selectedDate));
       datesCustomStylesForWeek.push(this.getCustomDateStyle(date, props));
-    }
+    };
+
     return {
       datesForWeek,
       datesAllowedForWeek,
@@ -497,6 +515,15 @@ class CalendarStrip extends Component {
     }
   }
 
+  onSwipeRight() {
+    // if(event.nativeEvent.contentOffset.x < width) {
+    //   this.getPreviousWeek();
+    //   return;
+    // };
+
+    this.getNextWeek();
+  };
+
   // Responsive sizing based on container width.
   onLayout(event) {
     let csWidth = event.nativeEvent.layout.width;
@@ -542,51 +569,51 @@ class CalendarStrip extends Component {
     let datesForWeek = this.state.datesForWeek;
     let datesRender = [];
     let _CalendarDay = this.props.dayComponent ? this.props.dayComponent : CalendarDay;
-    for (let i = 0; i < datesForWeek.length; i++) {
-      let enabled = this.state.datesAllowedForWeek[i];
-      let calendarDay = (
-        <_CalendarDay
-          date={datesForWeek[i]}
-          marking={this.getDateMarking(datesForWeek[i])}
-          selected={this.state.datesSelectedForWeek[i]}
-          enabled={enabled}
-          showDayName={this.props.showDayName}
-          showDayNumber={this.props.showDayNumber}
-          onDateSelected={() => enabled && this.onDateSelected(datesForWeek[i])}
-          calendarColor={this.props.calendarColor}
-          dateNameStyle={this.props.dateNameStyle}
-          dateNumberStyle={this.props.dateNumberStyle}
-          weekendDateNameStyle={this.props.weekendDateNameStyle}
-          weekendDateNumberStyle={this.props.weekendDateNumberStyle}
-          highlightDateNameStyle={this.props.highlightDateNameStyle}
-          highlightDateNumberStyle={this.props.highlightDateNumberStyle}
-          disabledDateNameStyle={this.props.disabledDateNameStyle}
-          disabledDateNumberStyle={this.props.disabledDateNumberStyle}
-          markedDatesStyle={this.props.markedDatesStyle}
-          disabledDateOpacity={this.props.disabledDateOpacity}
-          styleWeekend={this.props.styleWeekend}
-          daySelectionAnimation={this.props.daySelectionAnimation}
-          customStyle={this.state.datesCustomStylesForWeek[i]}
-          size={this.state.dayComponentWidth}
-          allowDayTextScaling={this.props.shouldAllowFontScaling}
-          markedDates={this.props.markedDates}
-        />
-      );
-      datesRender.push(
-        this.props.calendarAnimation ? (
-          <Animated.View
-            key={i}
-            style={{ opacity: this.animatedValue[i], flex: 1 }}
-          >
-            {calendarDay}
-          </Animated.View>
-        ) : (
-          <View key={i} style={{ flex: 1 }}>
-            {calendarDay}
-          </View>
-        )
-      );
-    }
+    // for (let i = 0; i < datesForWeek.length; i++) {
+    //   let enabled = this.state.datesAllowedForWeek[i];
+    //   let calendarDay = (
+    //     <_CalendarDay
+    //       date={datesForWeek[i]}
+    //       marking={this.getDateMarking(datesForWeek[i])}
+    //       selected={this.state.datesSelectedForWeek[i]}
+    //       enabled={enabled}
+    //       showDayName={this.props.showDayName}
+    //       showDayNumber={this.props.showDayNumber}
+    //       onDateSelected={() => enabled && this.onDateSelected(datesForWeek[i])}
+    //       calendarColor={this.props.calendarColor}
+    //       dateNameStyle={this.props.dateNameStyle}
+    //       dateNumberStyle={this.props.dateNumberStyle}
+    //       weekendDateNameStyle={this.props.weekendDateNameStyle}
+    //       weekendDateNumberStyle={this.props.weekendDateNumberStyle}
+    //       highlightDateNameStyle={this.props.highlightDateNameStyle}
+    //       highlightDateNumberStyle={this.props.highlightDateNumberStyle}
+    //       disabledDateNameStyle={this.props.disabledDateNameStyle}
+    //       disabledDateNumberStyle={this.props.disabledDateNumberStyle}
+    //       markedDatesStyle={this.props.markedDatesStyle}
+    //       disabledDateOpacity={this.props.disabledDateOpacity}
+    //       styleWeekend={this.props.styleWeekend}
+    //       daySelectionAnimation={this.props.daySelectionAnimation}
+    //       customStyle={this.state.datesCustomStylesForWeek[i]}
+    //       size={this.state.dayComponentWidth}
+    //       allowDayTextScaling={this.props.shouldAllowFontScaling}
+    //       markedDates={this.props.markedDates}
+    //     />
+    //   );
+    //   datesRender.push(
+    //     this.props.calendarAnimation ? (
+    //       <Animated.View
+    //         key={i}
+    //         style={{ opacity: this.animatedValue[i], flex: 1 }}
+    //       >
+    //         {calendarDay}
+    //       </Animated.View>
+    //     ) : (
+    //       <View key={i} style={{ flex: 1 }}>
+    //         {calendarDay}
+    //       </View>
+    //     )
+    //   );
+    // }
 
     let calendarHeader = this.props.showMonth && (
       <CalendarHeader
@@ -616,7 +643,7 @@ class CalendarStrip extends Component {
           {this.props.showDate && this.props.calendarHeaderPosition === "above" && calendarHeader}
 
           <View style={styles.datesStrip}>
-            <WeekSelector
+            {/* <WeekSelector
               controlDate={this.props.minDate}
               iconComponent={this.props.leftSelector}
               iconContainerStyle={this.props.iconContainer}
@@ -629,15 +656,70 @@ class CalendarStrip extends Component {
               }
               weekStartDate={this.state.datesForWeek[0]}
               size={this.state.selectorSize}
-            />
+            /> */}
 
             {this.props.showDate ? (
-              <View style={styles.calendarDates}>{datesRender}</View>
+              <>
+              {/* <View style={styles.calendarDates}>{datesRender}</View> */}
+              <FlatList
+                ref={ref => this._calendar = ref}
+                bounces={false}
+                horizontal
+                pagingEnabled
+                initialScrollIndex={0}
+                showsHorizontalScrollIndicator={false}
+                // onMomentumScrollEnd={() => this.onSwipeRight()}
+                scrollEventThrottle={500}
+                getItemLayout={(data, index) => (
+                  {length: ITEM_LENGTH, offset: ITEM_LENGTH * index, index}
+                )}
+                // onEndReached={() => { this.onSwipeRight()}}
+                onEndReachedThreshold={0.01}
+                data={datesForWeek}
+                extraData={this.state}
+                keyExtractor={(item, index) => index.toString()}
+                renderItem={({item, index}) => {
+                  let enabled = this.state.datesAllowedForWeek[index];
+
+                  return (
+                <View style={{ flex:1 }}>
+
+                  <_CalendarDay
+                    date={datesForWeek[index]}
+                    marking={this.getDateMarking(datesForWeek[index])}
+                    selected={this.state.datesSelectedForWeek[index]}
+                    enabled={enabled}
+                    showDayName={this.props.showDayName}
+                    showDayNumber={this.props.showDayNumber}
+                    onDateSelected={() => this.onDateSelected(datesForWeek[index])}
+                    calendarColor={this.props.calendarColor}
+                    dateNameStyle={this.props.dateNameStyle}
+                    dateNumberStyle={this.props.dateNumberStyle}
+                    weekendDateNameStyle={this.props.weekendDateNameStyle}
+                    weekendDateNumberStyle={this.props.weekendDateNumberStyle}
+                    highlightDateNameStyle={this.props.highlightDateNameStyle}
+                    highlightDateNumberStyle={this.props.highlightDateNumberStyle}
+                    disabledDateNameStyle={this.props.disabledDateNameStyle}
+                    disabledDateNumberStyle={this.props.disabledDateNumberStyle}
+                    markedDatesStyle={this.props.markedDatesStyle}
+                    disabledDateOpacity={this.props.disabledDateOpacity}
+                    styleWeekend={this.props.styleWeekend}
+                    daySelectionAnimation={this.props.daySelectionAnimation}
+                    customStyle={this.state.datesCustomStylesForWeek[index]}
+                    size={this.state.dayComponentWidth}
+                    allowDayTextScaling={this.props.shouldAllowFontScaling}
+                    markedDates={this.props.markedDates}
+                  />
+                </View>
+                  );
+                }}
+                />
+              </>
             ) : (
               calendarHeader
             )}
 
-            <WeekSelector
+            {/* <WeekSelector
               controlDate={this.props.maxDate}
               iconComponent={this.props.rightSelector}
               iconContainerStyle={this.props.iconContainer}
@@ -650,7 +732,7 @@ class CalendarStrip extends Component {
               }
               weekStartDate={this.state.datesForWeek[0]}
               size={this.state.selectorSize}
-            />
+            /> */}
           </View>
 
           {this.props.showDate && this.props.calendarHeaderPosition === "below" && calendarHeader}
@@ -663,3 +745,57 @@ class CalendarStrip extends Component {
 polyfill(CalendarStrip);
 
 export default CalendarStrip;
+
+
+{/* <FlatList
+                ref={ref => this._calendar = ref}
+                bounces={false}
+                horizontal
+                pagingEnabled
+                initialScrollIndex={30}
+                showsHorizontalScrollIndicator={false}
+                onMomentumScrollEnd={() => {}}
+                scrollEventThrottle={500}
+                getItemLayout={(data, index) => (
+                  {length: ITEM_LENGTH, offset: ITEM_LENGTH * index, index}
+                )}
+                // onEndReached={() => { this.getNextWeek()}}
+                onEndReachedThreshold={0.01}
+                data={datesFlatList}
+                extraData={this.state}
+                keyExtractor={(item, index) => index.toString()}
+                renderItem={({item, i}) => {
+                  let enabled = this.state.datesAllowedForWeek[i];
+
+                  return (
+                <View style={{ flex:1 }}>
+
+                  <_CalendarDay
+                    date={item}
+                    marking={this.getDateMarking(item)}
+                    selected={true}
+                    enabled={true}
+                    showDayName={this.props.showDayName}
+                    showDayNumber={this.props.showDayNumber}
+                    onDateSelected={() => this.onDateSelected(item)}
+                    calendarColor={this.props.calendarColor}
+                    dateNameStyle={this.props.dateNameStyle}
+                    dateNumberStyle={this.props.dateNumberStyle}
+                    weekendDateNameStyle={this.props.weekendDateNameStyle}
+                    weekendDateNumberStyle={this.props.weekendDateNumberStyle}
+                    highlightDateNameStyle={this.props.highlightDateNameStyle}
+                    highlightDateNumberStyle={this.props.highlightDateNumberStyle}
+                    disabledDateNameStyle={this.props.disabledDateNameStyle}
+                    disabledDateNumberStyle={this.props.disabledDateNumberStyle}
+                    markedDatesStyle={this.props.markedDatesStyle}
+                    disabledDateOpacity={this.props.disabledDateOpacity}
+                    styleWeekend={this.props.styleWeekend}
+                    daySelectionAnimation={this.props.daySelectionAnimation}
+                    customStyle={this.state.datesCustomStylesForWeek[i]}
+                    size={this.state.dayComponentWidth}
+                    allowDayTextScaling={this.props.shouldAllowFontScaling}
+                    markedDates={this.props.markedDates}
+                  />
+                </View>
+                  );
+                }} */}
