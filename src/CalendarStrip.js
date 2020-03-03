@@ -6,7 +6,7 @@ import React, { Component } from "react";
 import PropTypes from "prop-types";
 import {polyfill} from "react-lifecycles-compat";
 import { View, Animated, Easing, FlatList, Dimensions, Alert } from "react-native";
-
+import {OptimizedFlatList} from 'react-native-optimized-flatlist'
 import moment from "moment";
 
 import CalendarHeader from "./CalendarHeader";
@@ -661,7 +661,7 @@ class CalendarStrip extends Component {
             {this.props.showDate ? (
               <>
               {/* <View style={styles.calendarDates}>{datesRender}</View> */}
-              <FlatList
+              <OptimizedFlatList
                 ref={ref => this._calendar = ref}
                 bounces={false}
                 horizontal
